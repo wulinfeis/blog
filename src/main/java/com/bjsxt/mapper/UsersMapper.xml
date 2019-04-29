@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bjsxt.mapper.UsersMapper">
+	<resultMap type="com.bjsxt.pojo.BlogArticle" id="BaseResultMap">
+		<result column="Blog_id"  property="blogId" jdbcType="INTEGER"/>
+		<result column="Blog_Title"  property="blogTitle" jdbcType="VARCHAR"/>
+		<result column="Blog_Create_time"  property="blogCreateTime" jdbcType="VARCHAR"/>
+		<result column="Blog_Context"  property="blogContext" jdbcType="VARCHAR"/>
+		<result column="Blog_type"  property="blogType" jdbcType="VARCHAR"/>
+		<result column="Blog_status"  property="blogStatus" jdbcType="VARCHAR"/>
+		<result column="Blog_article_type"  property="blogArticleType" jdbcType="VARCHAR"/>
+		<result column="Blog_img"  property="blogImg" jdbcType="VARCHAR"/>
+		<result column="Blog_article_num"  property="blogArticleNum" jdbcType="INTEGER"/>
+		<association property="blogComment" javaType="com.bjsxt.pojo.BlogComment">
+			<result column="User_name" property="userName" jdbcType="VARCHAR" />
+			<result column="content" property="Content" jdbcType="VARCHAR" />
+			<result column="commentNum" property="commentNum" jdbcType="VARCHAR" />
+			<result column="time" property="time" jdbcType="VARCHAR" />
+		</association>
+		<association property="page" javaType="com.bjsxt.pojo.Page">
+			<result column="totalCount" property="totalCount" jdbcType="INTEGER" />
+			<result column="beginIndex" property="beginIndex" jdbcType="INTEGER" />
+			<result column="everyPage" property="everyPage" jdbcType="INTEGER" />
+		</association>
+	</resultMap>
+	
+	<!-- 获取文章列表 -->
+	<select id="getBlogArticle" resultMap="BaseResultMap" parameterType="com.bjsxt.pojo.BlogArticle">
+		SELECT
+		a.Blog_id, a.Blog_Title,a.Blog_Create_time,a.Blog_Context,
+		a.Blog_type,a.Blog_status,a.Blog_article_type,
+		b.Blog_article_num,
+		c.User_name,c.time,c.content,
+		 COUNT(c.Blog_id)  commentNum
+		  FROM Blog_article a,Blog_num b,Blog_comment c
+		  WHERE     a.Blog_id =b.Blog_id AND a.Blog_id =c.Blog_id  
+		  <if test="blogType!=null">
+		  and 
+		  	a.Blog_type =#{blogType}
+		  	</if>
+		  GROUP BY a.Blog_id limit #{page.beginIndex},#{page.everyPage}
+	</select>
+	
+	<select id="getTest" resultMap="BaseResultMap">
+		select a.Blog_Title,b.User_name,b.Content from Blog_article a, Blog_comment b where a.Blog_id =b.Blog_id
+	</select>
+
+	<select id="getBlogHotArticle" resultMap="BaseResultMap"> 
+		SELECT
+		a.Blog_id, a.Blog_Title,a.Blog_Create_time,a.Blog_Context,
+		a.Blog_type,a.Blog_status,a.Blog_article_type,
+		b.Blog_article_num,
+		c.User_name,c.time,c.content,
+		 COUNT(c.Blog_id)  commentNum
+		  FROM Blog_article a,Blog_num b,Blog_comment c
+		  WHERE  a.Blog_id =b.Blog_id AND a.Blog_id =c.Blog_id  GROUP BY a.Blog_id ORDER BY b.Blog_article_num DESC  
+	</select>
+	<!-- 获取今日推荐文章 -->
+	<select id="getTodateArticle" resultType="com.bjsxt.pojo.BlogArticle">
+		select
+		Blog_id blogId,Blog_Title blogTitle,Blog_Create_time blogCreateTime,Blog_Context blogContext,
+		Blog_type blogType,Blog_status blogStatus,Blog_article_type blogArticleType
+		 from Blog_article where Blog_status =1
+	</select>
+	
+	<select id="getAllArticle" resultType="int" parameterType="com.bjsxt.pojo.BlogArticle">
+		SELECT COUNT(a.Blog_id) totalCount FROM Blog_article a,Blog_num b,Blog_comment c 
+		  WHERE  a.Blog_id =b.Blog_id AND a.Blog_id =c.Blog_id  
+		  <if test="blogType!=null">
+		  	and a.Blog_type=#{blogType}
+		  </if>
+	</select>
+	
+	<!-- 查看文章  -->
+	<select id="viewAritcle" resultMap="BaseResultMap" parameterType="int">
+		select
+		a.Blog_id, a.Blog_Title,a.Blog_Create_time,a.Blog_Context,
+		a.Blog_type,a.Blog_status,a.Blog_article_type,
+		b.Blog_article_num,
+		c.User_name,c.time,c.content,
+		 COUNT(c.Blog_id)  commentNum 
+		  FROM Blog_article a,Blog_num b,Blog_comment c
+		  where  a.Blog_id =b.Blog_id and a.Blog_id =c.Blog_id and a.Blog_id =#{blogId}  GROUP BY Blog_id
+	</select>
+	<!-- 新增文章评论 -->
+	<insert id="insertBlogComment" parameterType="com.bjsxt.pojo.BlogComment">
+		insert into Blog_comment(Blog_id,User_name,time,Content,email) 
+		values(#{blogId},#{userName},#{time},#{Content},#{email});
+	</insert>
+	<!-- 查看文章评论 -->
+	<select id="viewArticleComment" resultType="com.bjsxt.pojo.BlogComment" parameterType="com.bjsxt.pojo.BlogComment">
+		  SELECT Blog_id,User_name userName,Time,Content FROM  Blog_comment where Blog_id=#{blogId}  
+		  ORDER BY Blog_id  LIMIT #{page.beginIndex},#{page.everyPage}
+	</select>
+	
+	<!-- 新增文章 -->
+	<insert id="saveAritcle" parameterType="com.bjsxt.pojo.BlogArticle" useGeneratedKeys="true" keyProperty="blogId">
+		insert into Blog_article(
+		Blog_Title,Blog_Create_time,Blog_Context,Blog_type,Blog_status,Blog_article_type) 
+		values(#{blogTitle},#{blogCreateTime},#{blogContext},#{blogType},#{blogStatus},#{blogArticleType})
+	</insert>
+	<!-- 新增文章评论 -->
+	<insert id="insertComment" parameterType="com.bjsxt.pojo.BlogArticle" >
+		insert into Blog_comment(Blog_id,User_name,TIME,Content) values(#{blogId},'系统评论',#{blogCreateTime},'博主棒棒哒，坚持下去哦~')
+	</insert>
+	<!-- 新增文章浏览次数 -->
+	<insert id="insertNum">
+		insert into Blog_num(Blog_article_num) values(5)
+	</insert>
+</mapper>

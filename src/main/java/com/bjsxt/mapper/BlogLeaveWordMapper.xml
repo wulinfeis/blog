@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bjsxt.mapper.BlogLeaveWordMapper">
+	<resultMap type="com.bjsxt.pojo.BlogLeaveWord" id="BaseResultMap">
+		<result column="word_status"  property="wordStatus" jdbcType="INTEGER"/>
+		<result column="word_id"  property="wordId" jdbcType="INTEGER"/>
+		<result column="word_content"  property="wordContent" jdbcType="VARCHAR"/>
+		<result column="word_time"  property="wordTime" jdbcType="VARCHAR"/>
+		<result column="word_people"  property="wordPeople" jdbcType="VARCHAR"/>
+		<result column="email"  property="email" jdbcType="VARCHAR"/>
+	</resultMap>
+	<select id="getLeaveWordList" resultType="int">
+		SELECT COUNT(word_id) FROM Blog_leave_word  WHERE word_status=1  
+	</select>
+	
+	<select id="getLeaveWord" resultMap="BaseResultMap" parameterType="com.bjsxt.pojo.BlogLeaveWord">
+		select word_status,word_id,word_content,word_time,word_people,email from Blog_leave_word
+		 where word_status=1  ORDER BY word_id  LIMIT #{page.beginIndex},#{page.everyPage}
+	</select>
+	
+	<insert id="leaveWord" parameterType="com.bjsxt.pojo.BlogLeaveWord">
+		insert into 
+		Blog_leave_word(word_content,word_status,word_time,word_people,email) 
+		values(#{wordContent},#{wordStatus},#{wordTime},#{wordPeople},#{email})
+	</insert>
+</mapper>

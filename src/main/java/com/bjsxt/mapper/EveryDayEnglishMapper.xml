@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bjsxt.mapper.EveryDayEnglishMapper">
+	<resultMap type="com.bjsxt.pojo.BlogEnglishSentence" id="BaseResultMap">
+		<result column="Sentence_id"  property="sentenceId" jdbcType="INTEGER"/>
+		<result column="English"  property="English" jdbcType="VARCHAR"/>
+		<result column="Chinese"  property="Chinese" jdbcType="VARCHAR"/>
+		<result column="TIME"  property="Time" jdbcType="VARCHAR"/>
+		<result column="Come_from"  property="comeFrom" jdbcType="VARCHAR"/>
+		<result column="comments"  property="comments" jdbcType="VARCHAR"/>
+	</resultMap>
+	
+	
+	<select id="getAll" resultMap="BaseResultMap">
+		select Sentence_id,English,Chinese,TIME,Come_from ,comments from Blog_English_sentence
+	</select>
+	
+</mapper>
